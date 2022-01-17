@@ -53,11 +53,14 @@ async def newGame(ctx, category="k-pop"):
         for player in players_list:
             players[player] = 0
 
+        print(players)
+
         #initialize songs
         if category.lower() == "k-pop":
             song_key = kpop_list.song_key
             time.sleep(0.5)
         elif category.lower() == 'ts':
+            print("Taylor")
             song_key = taylor_swift_list.song_key
             time.sleep(0.5)
 
@@ -187,8 +190,8 @@ async def help(ctx):
 
 @help.command()
 async def newGame(ctx):
-    em = discord.Embed(title = "newGame", description="Starts a new music guessing game.\nCategories: K-Pop, TS (for Taylor Swift).\nThe default category is K-Pop.")
-    em.add_field(name = "**Syntax**", value="!newGame <category>")
+    em = discord.Embed(title = "newGame", description="Starts a new music guessing game.\nAvailable categories: K-Pop, TS (for Taylor Swift). The default category is K-Pop.\n@ mention other users to add them as players.")
+    em.add_field(name = "**Syntax**", value="!newGame <category> <@ mentions>")
 
     await ctx.send(embed = em)
 
