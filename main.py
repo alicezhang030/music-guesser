@@ -64,16 +64,12 @@ async def newGame(ctx, category="k-pop"):
         for key in song_key:
             song_key[key].played_before = False
 
-        await round(ctx)
+        await round(ctx) #calls on the help! embed for !round
 
 
 @client.command()
 async def round(ctx):
     global players, in_game
-
-    if len(song_key) == 0: #if the user used !round before setting up a category
-        await newGame(ctx)
-        return
 
     in_game = True
 
@@ -198,7 +194,7 @@ async def newGame(ctx):
 
 @help.command()
 async def round(ctx):
-    em = discord.Embed(title = "round", description="Plays another song for players to guess, aka start another round.\nDO NOT use when no game is in progress.")
+    em = discord.Embed(title = "round", description="Plays a song for players to guess, aka start a round.\nDO NOT use when no game is in progress.")
     em.add_field(name = "**Syntax**", value="!round")
 
     await ctx.send(embed = em)
