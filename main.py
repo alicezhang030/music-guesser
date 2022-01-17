@@ -13,7 +13,7 @@ from discord.ext import commands
 from dotenv import load_dotenv
 import os
 
-client = commands.Bot(command_prefix="!")
+client = commands.Bot(command_prefix="!",  help_command=None)
 
 #---------GLOBAL VARIABLES---------
 play_for_secs = "5" #how many seconds the song plays for before players need to guess
@@ -23,8 +23,8 @@ in_game = False #True if the user is in a game already, False if not
 song_key = {} #the selected playlist of songs
 possible_categories = ['k-pop', 'taylor swift']
 
-#---------COMMANDS---------
-@client.command(name = "newGame", help = "!newGame [category] Starts a new music guessing game session. Categories: 'K-Pop,' 'TS' (Taylor Swift). Default K-Pop.")
+#---------COMMANDS--------
+@client.command()
 async def newGame(ctx, category="k-pop"):
     global in_game, song_key
 
@@ -67,7 +67,7 @@ async def newGame(ctx, category="k-pop"):
         await round(ctx)
 
 
-@client.command(name = "round", help = "Starts a new round in the game.")
+@client.command()
 async def round(ctx):
     global players, in_game
 
@@ -127,7 +127,7 @@ async def round(ctx):
                 await ctx.send(key.name + "#" + key.discriminator + "'s score is currently: " + str(players[key]))
                 time.sleep(0.8)
 
-@client.command(name = "endGame", help = "Ends the game.")
+@client.command()
 async def endGame(ctx):
     global in_game, song_key
 
@@ -161,7 +161,7 @@ async def endGame(ctx):
     else:
         await ctx.send("Uh...I am not connected to a voice channel. There's no game going on.")
 
-@client.command(name = "playFor", help = "Set the number of seconds each song play for.")
+@client.command()
 async def playFor(ctx, new_secs):
     global play_for_secs
     if not new_secs.isdigit():
@@ -171,7 +171,7 @@ async def playFor(ctx, new_secs):
         play_for_secs = new_secs
         await ctx.send("Got it. The songs will now play for " + play_for_secs + " seconds.")
 
-@client.command(name = "guessFor", help = "Set the number of seconds players have to guess.")
+@client.command()
 async def guessFor(ctx, new_secs):
     global guess_for_secs
     if not new_secs.isdigit():
@@ -180,6 +180,49 @@ async def guessFor(ctx, new_secs):
     else:
         guess_for_secs= new_secs
         await ctx.send("Got it. The guessing time limit is now set to " + guess_for_secs + " seconds.")
+
+@client.group(invoke_without_command = True)
+async def help(ctx):
+    em = discord.Embed(title="Help", description="Use !help <command> for more info on a command.")
+    em.add_field(name = "Start/End Game", value = "newGame, round, endGame")
+    em.add_field(name = "Game Settings", value = "playFor, guessFor")
+
+    await ctx.send(embed = em)
+
+@help.command()
+async def newGame(ctx):
+    em = discord.Embed(title = "newGame", description="Starts a new music guessing game.\nCategories: K-Pop, TS (for Taylor Swift).\nThe default category is K-Pop.")
+    em.add_field(name = "**Syntax**", value="!newGame <category>")
+
+    await ctx.send(embed = em)
+
+@help.command()
+async def round(ctx):
+    em = discord.Embed(title = "round", description="Plays another song for players to guess, aka start another round.\nDO NOT use when no game is in progress.")
+    em.add_field(name = "**Syntax**", value="!round")
+
+    await ctx.send(embed = em)
+
+@help.command()
+async def endGame(ctx):
+    em = discord.Embed(title = "endGame", description="Ends the current music guessing game and announces the winner.")
+    em.add_field(name = "**Syntax**", value="!endGame")
+
+    await ctx.send(embed = em)
+
+@help.command()
+async def playFor(ctx):
+    em = discord.Embed(title = "playFor", description="Set the number of seconds a song will play for in the game.")
+    em.add_field(name = "**Syntax**", value="!playFor <seconds>")
+
+    await ctx.send(embed = em)
+
+@help.command()
+async def guessFor(ctx):
+    em = discord.Embed(title = "playFor", description="Set the number of seconds players will have to guess in the game.")
+    em.add_field(name = "**Syntax**", value="!guessFor <seconds>")
+
+    await ctx.send(embed = em)
 
 #---------EVENTS---------
 @client.event
