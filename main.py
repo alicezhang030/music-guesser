@@ -24,8 +24,8 @@ song_key = {} #the selected playlist of songs
 possible_categories = ['k-pop', 'taylor swift']
 
 #---------COMMANDS---------
-@client.command(name = "newGame", help = "Starts a new music guessing game session.")
-async def newGame(ctx):
+@client.command(name = "newGame", help = "!newGame [category] Starts a new music guessing game session. Categories: 'K-Pop,' 'TS' (Taylor Swift). Default K-Pop.")
+async def newGame(ctx, category="k-pop"):
     global in_game, song_key
 
     if ctx.message.author.voice is None:  # the author of the msg isn't in a VC
@@ -45,10 +45,6 @@ async def newGame(ctx):
         time.sleep(0.5)
         await ctx.send("A game is already in progress! Please end this one before starting a new game.")
     else:
-        in_game = True
-        await ctx.send("Welcome! A new game has started :D")
-        time.sleep(0.5)
-
         #initialize all of the players
         players_list = [ctx.message.author]
         if ctx.message.mentions is not None:  # if it is multiplayer
@@ -57,40 +53,37 @@ async def newGame(ctx):
         for player in players_list:
             players[player] = 0
 
-        await ctx.send("You can choose to play in the following categories: K-Pop, Taylor Swift")
-        time.sleep(0.5)
-        await ctx.send("Which category would you like to play in?")
-
-        def check(message):
-            return message.content.lower() in possible_categories
-
-        category = await client.wait_for('message', check=check)
-
         #initialize songs
-        if category.content.lower() == "k-pop":
+        if category.lower() == "k-pop":
             song_key = kpop_list.song_key
             time.sleep(0.5)
-            await ctx.send("Got it! This game will be in the K-Pop category.")
-        elif category.content.lower() == 'taylor swift':
+        elif category.lower() == 'ts':
             song_key = taylor_swift_list.song_key
             time.sleep(0.5)
-            await ctx.send("Got it! This game will be in the Taylor Swift category.")
 
         for key in song_key:
             song_key[key].played_before = False
 
+        await round(ctx)
+
 
 @client.command(name = "round", help = "Starts a new round in the game.")
 async def round(ctx):
-    global players
+    global players, in_game
+
+    if len(song_key) == 0: #if the user used !round before setting up a category
+        await newGame(ctx)
+        return
+
+    in_game = True
 
     ydl_opts = {
         'format': 'bestaudio/best',
-        'postprocessors': [{
-            'key': 'FFmpegExtractAudio',
-            'preferredcodec': 'mp3',
-            'preferredquality': '192',
-        }],
+    }
+
+    FFMPEG_OPTIONS = {
+        'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
+        'options': '-vn',
     }
 
     vc = ctx.voice_client
@@ -99,12 +92,12 @@ async def round(ctx):
         selected_song_url = random_song_selection()
         info = ydl.extract_info(selected_song_url, download=False)
         plain_audio_url = info['formats'][0]['url']
-        source = await discord.FFmpegOpusAudio.from_probe(plain_audio_url)
+        source = await discord.FFmpegOpusAudio.from_probe(plain_audio_url, **FFMPEG_OPTIONS)
         vc.play(source)
 
     time.sleep(int(play_for_secs))
 
-    vc.pause()
+    vc.stop()
 
     await ctx.send("What is the title of this song?")
 
@@ -134,12 +127,13 @@ async def round(ctx):
                 await ctx.send(key.name + "#" + key.discriminator + "'s score is currently: " + str(players[key]))
                 time.sleep(0.8)
 
-@client.command(name = "endGame", help = "Ends the game")
+@client.command(name = "endGame", help = "Ends the game.")
 async def endGame(ctx):
-    global in_game
+    global in_game, song_key
 
     if ctx.voice_client is not None:
         in_game = False
+        song_key = {} #reset the song key
 
         winning_player = None
         winning_score = 0
@@ -167,7 +161,7 @@ async def endGame(ctx):
     else:
         await ctx.send("Uh...I am not connected to a voice channel. There's no game going on.")
 
-@client.command(name = "playFor [secs]", help = "Set the number of seconds each song play for.")
+@client.command(name = "playFor", help = "Set the number of seconds each song play for.")
 async def playFor(ctx, new_secs):
     global play_for_secs
     if not new_secs.isdigit():
@@ -177,7 +171,7 @@ async def playFor(ctx, new_secs):
         play_for_secs = new_secs
         await ctx.send("Got it. The songs will now play for " + play_for_secs + " seconds.")
 
-@client.command(name = "guessFor [secs]", help = "Set the number of seconds players have to guess.")
+@client.command(name = "guessFor", help = "Set the number of seconds players have to guess.")
 async def guessFor(ctx, new_secs):
     global guess_for_secs
     if not new_secs.isdigit():
