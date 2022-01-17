@@ -53,14 +53,11 @@ async def newGame(ctx, category="k-pop"):
         for player in players_list:
             players[player] = 0
 
-        print(players)
-
         #initialize songs
         if category.lower() == "k-pop":
             song_key = kpop_list.song_key
             time.sleep(0.5)
         elif category.lower() == 'ts':
-            print("Taylor")
             song_key = taylor_swift_list.song_key
             time.sleep(0.5)
 
