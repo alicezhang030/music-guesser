@@ -50,6 +50,8 @@ async def newGame(ctx, category="k-pop"):
         if ctx.message.mentions is not None:  # if it is multiplayer
             players_list = players_list + ctx.message.mentions
 
+        await ctx.send(players_list) #test
+
         for player in players_list:
             players[player] = 0
 
