@@ -50,8 +50,6 @@ async def newGame(ctx, category="k-pop"):
         if ctx.message.mentions is not None:  # if it is multiplayer
             players_list = players_list + ctx.message.mentions
 
-        await ctx.send(players_list) #test
-
         for player in players_list:
             players[player] = 0
 
@@ -101,7 +99,9 @@ async def round(ctx):
 
     def check(message): #check if the message was sent by one of the players and if their guess is the right answer
         if message.author in players and message.content.lower() == song_key[selected_song_url].title.lower():
+            await ctx.send(message.author + "is a player") #test
             return True
+        await ctx.send(message.author + "is not a player")  # test
         return False
 
     try:
