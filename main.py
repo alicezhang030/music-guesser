@@ -58,9 +58,7 @@ async def newGame(ctx):
         await ctx.send(category_msg)
 
         def check(message):
-            if message.author in players and message.content.lower() in possible_categories:
-                return True
-            return False
+            return message.author in players and message.content.lower() in possible_categories
 
         try:
             category = await client.wait_for('message', check=check, timeout=None)
@@ -69,10 +67,10 @@ async def newGame(ctx):
         else:
             category = category.content
             await ctx.send("Sounds good! You have selected the category " + category)
-            if category.lower() == "k-pop":
+            if category.lower() == "k-pop" or category.lower() == "k pop" or category.lower() == "kpop":
                 song_key = kpop_list.song_key
                 time.sleep(0.5)
-            elif category.lower() == 'ts':
+            elif category.lower() == 'taylor swift' or category.lower() == 'taylorswift':
                 song_key = taylor_swift_list.song_key
                 time.sleep(0.5)
 
