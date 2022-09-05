@@ -145,23 +145,36 @@ async def endGame(ctx):
     if ctx.voice_client is not None:
         in_game = False
         song_key = {}  # reset the song key
-        players = {}  # reset the players
 
-        winning_player = None
+        winning_players = []
         winning_score = 0
 
         for key in players:
-            if (players[key] > winning_score):
-                winning_player = key.name + "#" + key.discriminator
+            if players[key] > winning_score:
+                username = key.name + "#" + key.discriminator
+                winning_players = [username]
                 winning_score = players[key]
+            elif players[key] == winning_score:
+                username = key.name + "#" + key.discriminator
+                winning_players.append(username)
 
-        if winning_player is not None:
+        if len(winning_players) != 0:
             time.sleep(0.4)
             await ctx.send("That was a good game :D")
+
+            winner_msg = ""
+            if len(winning_players) == 1:
+                winner_msg += winning_player + "!"
+            else:
+                for i in range(len(winning_players) - 2):
+                    winner_msg += winning_players[i]
+                    winner_msg += ", "
+                winner_msg += winning_players[len(winning_players) - 1]
+
             time.sleep(1)
             await ctx.send("The winner is...")
             time.sleep(1.5)
-            await ctx.send(winning_player + "!")
+            await ctx.send(winner_msg)
             time.sleep(1.5)
             await ctx.send("Here's the final scoreboard...")
             time.sleep(1)
@@ -169,6 +182,7 @@ async def endGame(ctx):
                 await ctx.send(key.name + "#" + key.discriminator + "'s final score: " + str(players[key]))
                 time.sleep(0.8)
 
+        players = {}  # reset the players
         await ctx.voice_client.disconnect()
     else:
         await ctx.send("Uh...I am not connected to a voice channel. There's no game going on.")
