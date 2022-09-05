@@ -21,11 +21,12 @@ guess_for_secs = "15"  # how many seconds the players have to guess
 players = {}  # dictionary where the players are the keys and their scores are the values
 in_game = False  # True if the user is in a game already, False if not
 song_key = {}  # the selected playlist of songs
+category = ""
 possible_categories = ['k-pop', 'taylor swift']
 
 # ---------COMMANDS--------
 @client.command()
-async def newGame(ctx, category="k-pop"):
+async def newGame(ctx):
     global in_game, song_key
 
     if ctx.message.author.voice is None:  # the author of the msg isn't in a VC
@@ -53,26 +54,39 @@ async def newGame(ctx, category="k-pop"):
         for player in players_list:
             players[player] = 0
 
-        # initialize songs
-        if category.lower() == "k-pop":
-            song_key = kpop_list.song_key
-            time.sleep(0.5)
-        elif category.lower() == 'ts':
-            song_key = taylor_swift_list.song_key
-            time.sleep(0.5)
+        category_msg = "Which category would you like to play? Your possible options are k-pop and taylor swift"
+        await ctx.send(category_msg)
 
-        for key in song_key:
-            song_key[key].played_before = False
+        def check(message):
+            if message.author in players and message.content.lower() in possible_categories:
+                return True
+            return False
 
+        try:
+            category = await client.wait_for('message', check=check, timeout=None)
+        except asyncio.TimeoutError:
+            await ctx.send("Yawn...I have fallen asleep waiting for your reply. Goodbye.")
+        else:
+            await ctx.send("Sounds good! You have selected the category " + str(category))
+            if category.lower() == "k-pop":
+                song_key = kpop_list.song_key
+                time.sleep(0.5)
+            elif category.lower() == 'ts':
+                song_key = taylor_swift_list.song_key
+                time.sleep(0.5)
+
+            for key in song_key:
+                song_key[key].played_before = False
+
+        await ctx.send("You may now start a new round with the !round command")
         await round(ctx)  # calls on the help! embed for !round
-
 
 @client.command()
 async def round(ctx):
     global players, in_game
 
     in_game = True
-    await ctx.send("Called round")  # test
+    await ctx.send("New round has begun!")
 
     ydl_opts = {
         'format': 'bestaudio/best',
