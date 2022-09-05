@@ -73,6 +73,8 @@ async def round(ctx):
 
     in_game = True
 
+    await ctx.send("Called round")  # test
+
     ydl_opts = {
         'format': 'bestaudio/best',
     }
