@@ -54,6 +54,8 @@ async def newGame(ctx):
         for player in players_list:
             players[player] = 0
 
+        await ctx.send("You have started a game with " + ", ".join(str(x) for x in players.keys()))
+        time.sleep(0.5)
         category_msg = "Which category would you like to play? Your possible options are k-pop and taylor swift"
         await ctx.send(category_msg)
 
@@ -78,6 +80,7 @@ async def newGame(ctx):
                 song_key[key].played_before = False
 
         await ctx.send("You may now start a new round with the !round command")
+        time.sleep(0.5)
         await round(ctx)  # calls on the help! embed for !round
 
 @client.command()
@@ -109,10 +112,7 @@ async def round(ctx):
 
     vc.stop()
 
-    await ctx.send("What is the title of this song? The song title is " + song_key[selected_song_url].title)
-
-    for key in players:
-        await ctx.send("Player: " + str(key))
+    await ctx.send("What is the title of this song?")
 
     def check(message):  # check if the message was sent by one of the players and if their guess is the right answer
         if message.author in players and message.content.lower() == song_key[selected_song_url].title.lower():
@@ -160,9 +160,9 @@ async def endGame(ctx):
             time.sleep(0.4)
             await ctx.send("That was a good game :D")
             time.sleep(1)
-            await ctx.send("The winner is...")
+            await ctx.send("The winner(s) is...")
             time.sleep(1.5)
-            await ctx.send(",".join(str(x) for x in winning_players))
+            await ctx.send(", ".join(str(x) for x in winning_players))
             time.sleep(1.5)
             await ctx.send("Here's the final scoreboard...")
             time.sleep(1)
