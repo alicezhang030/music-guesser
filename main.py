@@ -67,7 +67,8 @@ async def newGame(ctx):
         except asyncio.TimeoutError:
             await ctx.send("Yawn...I have fallen asleep waiting for your reply. Goodbye.")
         else:
-            await ctx.send("Sounds good! You have selected the category " + str(category))
+            category = category.content
+            await ctx.send("Sounds good! You have selected the category " + category)
             if category.lower() == "k-pop":
                 song_key = kpop_list.song_key
                 time.sleep(0.5)
