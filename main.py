@@ -162,7 +162,7 @@ async def endGame(ctx):
 
             winner_msg = ""
             if len(winning_players) == 1:
-                winner_msg += winning_player + "!"
+                winner_msg += winning_players[0] + "!"
             else:
                 for i in range(len(winning_players) - 2):
                     winner_msg += winning_players[i]
