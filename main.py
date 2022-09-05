@@ -140,11 +140,12 @@ async def round(ctx):
 
 @client.command()
 async def endGame(ctx):
-    global in_game, song_key
+    global in_game, song_key, players
 
     if ctx.voice_client is not None:
         in_game = False
         song_key = {}  # reset the song key
+        players = {}  # reset the players
 
         winning_player = None
         winning_score = 0
@@ -250,24 +251,10 @@ async def guessFor(ctx):
 async def on_ready():
     print('Bot is ready!')
 
-
 # ---------HELPER METHODS---------
 
-def all_songs_played():
-    for key in song_key:
-        if song_key[key].played_before is False:  # there is a song that hasn't been played yet
-            return False
-    return True
-
 def random_song_selection():
-    print("Length of song key: " + str(len(song_key)))
     random_number = random.randint(0, len(song_key) - 1)
-
-    #while song_key[list(song_key.keys())[random_number]].played_before is True:
-        #random_number = random.randint(0, len(song_key) - 1)
-
-    #song_key[list(song_key.keys())[random_number]].played_before = True
-
     return list(song_key.keys())[random_number]
 
 load_dotenv('.env')
