@@ -159,21 +159,10 @@ async def endGame(ctx):
         if len(winning_players) != 0:
             time.sleep(0.4)
             await ctx.send("That was a good game :D")
-
-            print(winning_players)
-            winner_msg = ""
-            if len(winning_players) == 1:
-                winner_msg += winning_players[0] + "!"
-            else:
-                for i in range(len(winning_players) - 2):
-                    winner_msg += winning_players[i]
-                    winner_msg += ", "
-                winner_msg += winning_players[len(winning_players) - 1]
-
             time.sleep(1)
             await ctx.send("The winner is...")
             time.sleep(1.5)
-            await ctx.send(winner_msg)
+            await ctx.send(",".join(str(x) for x in winning_players))
             time.sleep(1.5)
             await ctx.send("Here's the final scoreboard...")
             time.sleep(1)
