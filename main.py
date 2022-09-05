@@ -113,6 +113,7 @@ async def round(ctx):
     vc.stop()
 
     await ctx.send("What is the title of this song?")
+    print("The title of the song is " + song_key[selected_song_url].title)
 
     def check(message):  # check if the message was sent by one of the players and if their guess is the right answer
         if message.author in players and message.content.lower() == song_key[selected_song_url].title.lower():
