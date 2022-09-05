@@ -61,6 +61,8 @@ async def newGame(ctx, category="k-pop"):
             song_key = taylor_swift_list.song_key
             time.sleep(0.5)
 
+        print(song_key)  # TEST
+
         for key in song_key:
             song_key[key].played_before = False
 
@@ -75,53 +77,53 @@ async def round(ctx):
 
     await ctx.send("Called round")  # test
 
-    ydl_opts = {
-        'format': 'bestaudio/best',
-    }
-
-    FFMPEG_OPTIONS = {
-        'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
-        'options': '-vn',
-    }
-
-    vc = ctx.voice_client
-
-    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-        selected_song_url = random_song_selection()
-        info = ydl.extract_info(selected_song_url, download=False)
-        plain_audio_url = info['formats'][0]['url']
-        source = await discord.FFmpegOpusAudio.from_probe(plain_audio_url, **FFMPEG_OPTIONS)
-        vc.play(source)
-
-    time.sleep(int(play_for_secs))
-
-    vc.stop()
-
-    await ctx.send("What is the title of this song? The song title is " + song_key[selected_song_url].title)
-
-    for key in players:
-        await ctx.send("Player: " + str(key))
-
-    def check(message): #check if the message was sent by one of the players and if their guess is the right answer
-        if message.author in players and message.content.lower() == song_key[selected_song_url].title.lower():
-            return True
-        return False
-
-    try:
-        guess = await client.wait_for('message', check=check, timeout=int(guess_for_secs))
-    except asyncio.TimeoutError:
-        await ctx.send("Time is up and no one got it right :( The correct answer is " + song_key[selected_song_url].title)
-    else:
-        time.sleep(0.4)
-        players[guess.author] = players[guess.author] + 1
-        await ctx.send("Woo hoo! {.author} got it correct.".format(guess))
+    if all_songs_played():
         time.sleep(1)
-        if all_songs_played():
-            time.sleep(1)
-            await ctx.send("All of the songs in the playlist has been played.")
-            time.sleep(0.6)
-            await endGame(ctx)
+        await ctx.send("All of the songs in the playlist has been played.")
+        time.sleep(0.6)
+        await endGame(ctx)
+    else:
+        ydl_opts = {
+            'format': 'bestaudio/best',
+        }
+
+        FFMPEG_OPTIONS = {
+            'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
+            'options': '-vn',
+        }
+
+        vc = ctx.voice_client
+
+        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+            selected_song_url = random_song_selection()
+            info = ydl.extract_info(selected_song_url, download=False)
+            plain_audio_url = info['formats'][0]['url']
+            source = await discord.FFmpegOpusAudio.from_probe(plain_audio_url, **FFMPEG_OPTIONS)
+            vc.play(source)
+
+        time.sleep(int(play_for_secs))
+
+        vc.stop()
+
+        await ctx.send("What is the title of this song? The song title is " + song_key[selected_song_url].title)
+
+        for key in players:
+            await ctx.send("Player: " + str(key))
+
+        def check(message): #check if the message was sent by one of the players and if their guess is the right answer
+            if message.author in players and message.content.lower() == song_key[selected_song_url].title.lower():
+                return True
+            return False
+
+        try:
+            guess = await client.wait_for('message', check=check, timeout=int(guess_for_secs))
+        except asyncio.TimeoutError:
+            await ctx.send("Time is up and no one got it right :( The correct answer is " + song_key[selected_song_url].title)
         else:
+            time.sleep(0.4)
+            players[guess.author] = players[guess.author] + 1
+            await ctx.send("Woo hoo! {.author} got it correct.".format(guess))
+            time.sleep(1)
             await ctx.send("Here's the scoreboard so far...")
             time.sleep(1)
             for key in players:
@@ -239,7 +241,9 @@ def all_songs_played():
     return True
 
 def random_song_selection():
+    print("Length of song_key: " + len(song_key))
     random_number = random.randint(0, len(song_key) - 1)
+    print("Random number: " + random_number)  # TEST
 
     while song_key[list(song_key.keys())[random_number]].played_before is True:
         random_number = random.randint(0, len(song_key) - 1)
