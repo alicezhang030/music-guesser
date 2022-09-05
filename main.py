@@ -61,8 +61,6 @@ async def newGame(ctx, category="k-pop"):
             song_key = taylor_swift_list.song_key
             time.sleep(0.5)
 
-        print(song_key)  # TEST
-
         for key in song_key:
             song_key[key].played_before = False
 
@@ -241,9 +239,9 @@ def all_songs_played():
     return True
 
 def random_song_selection():
-    print("Length of song_key: " + len(song_key))
+    print("Length of song_key: " + str(len(song_key))) # TEST
     random_number = random.randint(0, len(song_key) - 1)
-    print("Random number: " + random_number)  # TEST
+    print("Random number: " + str(random_number))  # TEST
 
     while song_key[list(song_key.keys())[random_number]].played_before is True:
         random_number = random.randint(0, len(song_key) - 1)
