@@ -245,7 +245,7 @@ def all_songs_played():
     return True
 
 def random_song_selection():
-    print("Length of song key: " + len(song_key))
+    print("Length of song key: " + str(len(song_key)))
     random_number = random.randint(0, len(song_key) - 1)
 
     #while song_key[list(song_key.keys())[random_number]].played_before is True:
