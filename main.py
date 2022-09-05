@@ -160,6 +160,7 @@ async def endGame(ctx):
             time.sleep(0.4)
             await ctx.send("That was a good game :D")
 
+            print(winning_players)
             winner_msg = ""
             if len(winning_players) == 1:
                 winner_msg += winning_players[0] + "!"
