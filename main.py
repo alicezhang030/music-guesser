@@ -16,36 +16,36 @@ import os
 client = commands.Bot(command_prefix="!", help_command=None)
 
 # ---------GLOBAL VARIABLES---------
-play_for_secs = "10"  # how many seconds the song plays for before players need to guess
-guess_for_secs = "15"  # how many seconds the players have to guess
+play_for_secs = 10  # how many seconds the song plays for before players need to guess
+guess_for_secs = 15  # how many seconds the players have to guess
 players = {}  # dictionary where the players are the keys and their scores are the values
-in_game = False  # True if the user is in a game already, False if not
+in_game = False  # True if the bot is in a game already, False if not
 song_key = {}  # the selected playlist of songs
 category = ""
 possible_categories = ['k-pop', 'taylor swift']
+
 
 # ---------COMMANDS--------
 @client.command()
 async def newGame(ctx):
     global in_game, song_key
 
-    if ctx.message.author.voice is None:  # the author of the msg isn't in a VC
+    if in_game:
+        await ctx.send("I'm facilitating someone else's game right now! Please wait for me :D")
+        return
+    elif ctx.message.author.voice is None:  # the author of the msg isn't in a VC
         await ctx.send("You're not in a voice channel yet. Join a voice channel for me to work!")
         return
     else:
         voice_channel = ctx.message.author.voice.channel
 
-    if ctx.voice_client is None:  # if the bot isn't already in a VC
-        await voice_channel.connect()
-    else:  # if the bot is in a VC already
-        if ctx.voice_client.channel is not voice_channel:
-            await ctx.send("I am switching voice channels now...")
-            await ctx.voice_client.move_to(voice_channel)
+        if ctx.voice_client is None:  # if the bot isn't already in a VC
+            await voice_channel.connect()
+        else:  # if the bot is in a VC already
+            if ctx.voice_client.channel is not voice_channel:
+                await ctx.send("I am switching to your voice channel now...")
+                await ctx.voice_client.move_to(voice_channel)
 
-    if in_game:
-        time.sleep(0.5)
-        await ctx.send("A game is already in progress! Please end this one before starting a new game.")
-    else:
         # initialize all of the players
         players_list = [ctx.message.author]
         if ctx.message.mentions is not None:  # if it is multiplayer
@@ -83,6 +83,7 @@ async def newGame(ctx):
         time.sleep(0.5)
         await round(ctx)  # calls on the help! embed for !round
 
+
 @client.command()
 async def round(ctx):
     global players, in_game
@@ -108,7 +109,7 @@ async def round(ctx):
         source = await discord.FFmpegOpusAudio.from_probe(plain_audio_url, **FFMPEG_OPTIONS)
         vc.play(source)
 
-    time.sleep(int(play_for_secs))
+    time.sleep(play_for_secs)
 
     vc.stop()
 
@@ -121,7 +122,7 @@ async def round(ctx):
         return False
 
     try:
-        guess = await client.wait_for('message', check=check, timeout=int(guess_for_secs))
+        guess = await client.wait_for('message', check=check, timeout=guess_for_secs)
     except asyncio.TimeoutError:
         await ctx.send(
             "Time is up and no one got it right :( The correct answer is " + song_key[selected_song_url].title)
@@ -142,9 +143,6 @@ async def endGame(ctx):
     global in_game, song_key, players
 
     if ctx.voice_client is not None:
-        in_game = False
-        song_key = {}  # reset the song key
-
         winning_players = []
         winning_score = 0
 
@@ -171,7 +169,7 @@ async def endGame(ctx):
                 await ctx.send(key.name + "#" + key.discriminator + "'s final score: " + str(players[key]))
                 time.sleep(0.8)
 
-        players = {}  # reset the players
+        default_settings()
         await ctx.voice_client.disconnect()
     else:
         await ctx.send("Uh...I am not connected to a voice channel. There's no game going on.")
@@ -184,8 +182,8 @@ async def playFor(ctx, new_secs):
         await ctx.send("Seconds are numbers...")
         return
     else:
-        play_for_secs = new_secs
-        await ctx.send("Got it. The songs will now play for " + play_for_secs + " seconds.")
+        play_for_secs = int(new_secs)
+        await ctx.send("Got it. The songs will now play for " + new_secs + " seconds.")
 
 
 @client.command()
@@ -195,8 +193,8 @@ async def guessFor(ctx, new_secs):
         await ctx.send("Seconds are numbers...")
         return
     else:
-        guess_for_secs = new_secs
-        await ctx.send("Got it. The guessing time limit is now set to " + guess_for_secs + " seconds.")
+        guess_for_secs = int(new_secs)
+        await ctx.send("Got it. The guessing time limit is now set to " + new_secs + " seconds.")
 
 
 @client.group(invoke_without_command=True)
@@ -241,6 +239,7 @@ async def playFor(ctx):
 
     await ctx.send(embed=em)
 
+
 @help.command()
 async def guessFor(ctx):
     em = discord.Embed(title="playFor", description="Set the number of seconds players will have to guess in the game.")
@@ -254,11 +253,22 @@ async def guessFor(ctx):
 async def on_ready():
     print('Bot is ready!')
 
+
 # ---------HELPER METHODS---------
 
 def random_song_selection():
     random_number = random.randint(0, len(song_key) - 1)
     return list(song_key.keys())[random_number]
+
+def default_settings():
+    global play_for_secs, guess_for_secs, players, in_game, song_key, category
+
+    play_for_secs = 10
+    guess_for_secs = 15
+    players = {}
+    in_game = False
+    song_key = {}
+    category = ""
 
 load_dotenv('.env')
 client.run(os.getenv('BOT_TOKEN'))
